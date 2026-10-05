@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Check,
+  CircleHelp,
   Database,
   Leaf,
   MapPinned,
@@ -38,7 +39,7 @@ function StageDistribution({ items, total }) {
           <div className="distribution-row" key={item.growth_stage} style={{ '--delay': `${index * 70}ms` }}>
             <div className="distribution-row__label">
               <span>{shortStage(item.growth_stage)}</span>
-              <strong>{item.count} {item.count === 1 ? 'farm' : 'farms'}</strong>
+              <strong>{item.count} {item.count === 1 ? 'farm' : 'farms'} · {percentage}%</strong>
             </div>
             <div className="distribution-row__track" aria-label={`${percentage}%`}>
               <span style={{ width: `${percentage}%` }} />
@@ -58,7 +59,7 @@ export default function Dashboard({ data, loading, onAdd, onOpenRecords, onViewR
     <div className="page-stack page-enter">
       <section className="hero-panel">
         <div className="hero-panel__content">
-          <span className="hero-panel__badge"><Leaf size={14} /> Focused FR-02 implementation</span>
+          <span className="hero-panel__badge"><Leaf size={14} /> Focused crop & farm data module</span>
           <h2>Farm data that is ready for the field.</h2>
           <p>
             Register, retrieve, and update sugarcane farm records with clear validation and reliable
@@ -83,7 +84,7 @@ export default function Dashboard({ data, loading, onAdd, onOpenRecords, onViewR
 
       <section className="metrics-grid" aria-label="Farm overview">
         <MetricCard icon={Tractor} label="Registered farms" value={loading ? '—' : data.total_farms} note="SQLite records" tone="green" />
-        <MetricCard icon={MapPinned} label="Cultivated area" value={loading ? '—' : `${data.total_area} ac`} note="Across all plots" tone="blue" />
+        <MetricCard icon={MapPinned} label="Cultivated area" value={loading ? '—' : `${data.total_area} acres`} note="Across all plots" tone="blue" />
         <MetricCard icon={Sprout} label="Leading stage" value={loading ? '—' : topStage ? shortStage(topStage.growth_stage) : 'Not set'} note={topStage ? `${topStage.count} active record${topStage.count === 1 ? '' : 's'}` : 'Add a record to begin'} tone="amber" />
         <MetricCard icon={Leaf} label="Top variety" value={loading ? '—' : topVariety?.sugarcane_variety || 'Not set'} note={topVariety ? 'Most recorded variety' : 'No variety data'} tone="violet" />
       </section>
@@ -93,18 +94,20 @@ export default function Dashboard({ data, loading, onAdd, onOpenRecords, onViewR
           <div className="panel__header">
             <div>
               <span className="eyebrow">Crop overview</span>
-              <h3>Growth stage distribution</h3>
+              <h3>Farms by crop growth stage</h3>
+              <p className="panel__description">Compares how many registered farms are currently in each sugarcane growth stage.</p>
             </div>
             <span className="panel__badge">Live records</span>
           </div>
           <StageDistribution items={data.stage_distribution || []} total={data.total_farms || 0} />
+          <div className="chart-insight"><CircleHelp size={16} /><span><strong>Why this matters:</strong> it highlights the dominant crop stage, helping plan stage-specific field checks and irrigation preparation.</span></div>
         </article>
 
         <article className="panel demo-panel">
           <div className="panel__header">
             <div>
               <span className="eyebrow">Live demonstration</span>
-              <h3>FR-02 workflow</h3>
+              <h3>Farm record workflow</h3>
             </div>
             <span className="panel__badge panel__badge--mint">4 steps</span>
           </div>

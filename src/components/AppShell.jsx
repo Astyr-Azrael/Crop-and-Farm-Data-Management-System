@@ -32,13 +32,6 @@ export default function AppShell({ activeView, onNavigate, collapsed, onToggle, 
           ))}
         </nav>
 
-        <div className="sidebar__scope">
-          <span className="sidebar__scope-dot" />
-          <div>
-            <strong>FR-02 prototype</strong>
-            <small>SQLite persistence active</small>
-          </div>
-        </div>
       </aside>
 
       <main className="main-content">{children}</main>

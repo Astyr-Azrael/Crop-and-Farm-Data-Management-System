@@ -18,11 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
 
 
-def create_app(database_path=None):
+def create_app(database_path=None, seed_samples=True):
     app = Flask(__name__, static_folder=None)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     app.config["DATABASE"] = database_path or os.environ.get("FARM_DATABASE")
-    initialize_database(app.config["DATABASE"])
+    initialize_database(app.config["DATABASE"], seed_samples=seed_samples)
 
     @app.get("/api/health")
     def health():

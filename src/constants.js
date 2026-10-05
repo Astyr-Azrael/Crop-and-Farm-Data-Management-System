@@ -21,6 +21,29 @@ export const growthStages = [
   'Maturity (271-365 days)',
 ]
 
+export const locationSuggestions = [
+  'Taluka Karad, Satara District, Maharashtra',
+  'Karad, Satara, Maharashtra',
+  'Koregaon, Satara, Maharashtra',
+  'Phaltan, Satara, Maharashtra',
+  'Wai, Satara, Maharashtra',
+  'Miraj, Sangli, Maharashtra',
+  'Tasgaon, Sangli, Maharashtra',
+  'Hatkanangale, Kolhapur, Maharashtra',
+  'Shirol, Kolhapur, Maharashtra',
+  'Baramati, Pune, Maharashtra',
+  'Indapur, Pune, Maharashtra',
+  'Pandharpur, Solapur, Maharashtra',
+  'Malshiras, Solapur, Maharashtra',
+  'Shrirampur, Ahmednagar, Maharashtra',
+  'Kopargaon, Ahmednagar, Maharashtra',
+  'Niphad, Nashik, Maharashtra',
+  'Malegaon, Nashik, Maharashtra',
+  'Jalna, Maharashtra',
+  'Latur, Maharashtra',
+  'Nanded, Maharashtra',
+]
+
 export const demoRecord = {
   farm_name: 'Sugarcane Farm - Plot A',
   location: 'Taluka Karad, Satara District, Maharashtra',

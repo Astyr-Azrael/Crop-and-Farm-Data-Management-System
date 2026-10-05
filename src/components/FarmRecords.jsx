@@ -7,7 +7,7 @@ export default function FarmRecords({ records, loading, query, stage, onQuery, o
     <div className="page-stack page-enter">
       <section className="records-toolbar">
         <div className="records-toolbar__copy">
-          <span className="eyebrow">FR-02 · Persistent records</span>
+          <span className="eyebrow">Persistent farm data</span>
           <h2>Farm & crop records</h2>
           <p>Manage every registered sugarcane plot from one verified data table.</p>
         </div>

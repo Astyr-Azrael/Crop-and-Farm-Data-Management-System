@@ -7,8 +7,8 @@ export default function BrandMark({ compact = false }) {
         <Sprout size={compact ? 20 : 23} strokeWidth={2.2} />
       </span>
       <span className="brand__copy">
-        <strong>FieldNest</strong>
-        {!compact && <small>Crop data, clearly managed</small>}
+        <strong>Irrigation Advisory</strong>
+        {!compact && <small>Crop & farm management system</small>}
       </span>
     </div>
   )

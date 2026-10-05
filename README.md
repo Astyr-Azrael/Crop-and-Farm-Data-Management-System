@@ -14,6 +14,8 @@ The application deliberately contains no login, irrigation advisory, weather, no
 - CSV export of saved records
 - Responsive React interface with subtle page and interaction animations
 - One-click demo form fill for **Sugarcane Farm - Plot A**
+- Local location autocomplete for common Maharashtra farming regions
+- Twelve sample farm and crop records available immediately for dashboard and CSV demonstrations
 
 ## Technology
 
@@ -76,4 +78,4 @@ Then open `http://127.0.0.1:5000`.
 npm test
 ```
 
-The test suite uses a temporary SQLite database and verifies mandatory validation, creation, retrieval, update, dashboard aggregation, CSV export, and deletion.
+The test suite uses temporary SQLite databases and verifies mandatory validation, sample-data seeding, creation, retrieval, update, dashboard aggregation, CSV export, and deletion.

@@ -20,7 +20,7 @@ class FarmApiTestCase(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.database = Path(self.temp_dir.name) / "test.db"
-        self.app = create_app(self.database)
+        self.app = create_app(self.database, seed_samples=False)
         self.app.config.update(TESTING=True)
         self.client = self.app.test_client()
 
@@ -41,6 +41,22 @@ class FarmApiTestCase(unittest.TestCase):
         response = self.client.post("/api/farms", json=invalid)
         self.assertEqual(response.status_code, 400)
         self.assertIn("area", response.get_json()["errors"])
+
+    def test_sample_dataset_is_seeded_for_demo_and_export(self):
+        seeded_database = Path(self.temp_dir.name) / "seeded.db"
+        seeded_app = create_app(seeded_database, seed_samples=True)
+        seeded_app.config.update(TESTING=True)
+        client = seeded_app.test_client()
+
+        records = client.get("/api/farms").get_json()
+        dashboard = client.get("/api/dashboard").get_json()
+        export = client.get("/api/farms/export.csv")
+
+        self.assertEqual(len(records), 12)
+        self.assertEqual(dashboard["total_farms"], 12)
+        self.assertGreater(dashboard["total_area"], 50)
+        self.assertGreaterEqual(len(dashboard["stage_distribution"]), 4)
+        self.assertEqual(export.data.count(b"\n"), 13)
 
     def test_create_retrieve_update_export_and_delete_record(self):
         created = self.client.post("/api/farms", json=VALID_RECORD)
