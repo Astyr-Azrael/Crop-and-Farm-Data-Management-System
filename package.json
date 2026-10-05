@@ -1,0 +1,25 @@
+{
+  "name": "crop-and-farm-data-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k \"python backend/app.py\" \"vite\"",
+    "dev:frontend": "vite",
+    "dev:backend": "python backend/app.py",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "python -m unittest discover -s tests -p \"test_*.py\""
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.2.8",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "vite": "^6.0.7"
+  }
+}

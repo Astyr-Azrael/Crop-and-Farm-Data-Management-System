@@ -205,6 +205,21 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Node / Vite
+node_modules/
+dist/
+npm-debug.log*
+
+# Local SQLite data
+backend/farm_data.db
+backend/farm_data.db-journal
+backend/farm_data.db-shm
+backend/farm_data.db-wal
+
+# Codex working files and local deliverables
+work/
+outputs/
+
 # Ruff stuff:
 .ruff_cache/
 
