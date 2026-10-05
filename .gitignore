@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -208,6 +208,7 @@ tempCodeRunnerFile.py
 # Node / Vite
 node_modules/
 dist/
+/dist.zip
 npm-debug.log*
 
 # Local SQLite data
