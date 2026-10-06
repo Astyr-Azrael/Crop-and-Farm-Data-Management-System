@@ -53,6 +53,7 @@ class FarmApiTestCase(unittest.TestCase):
         first_page = client.get("/api/farms").get_json()
         last_page = client.get("/api/farms?page=4").get_json()
         dashboard = client.get("/api/dashboard").get_json()
+        mapped = client.get("/api/farms-map").get_json()
         export = client.get("/api/farms/export.csv")
 
         self.assertEqual(len(first_page["items"]), 10)
@@ -62,6 +63,8 @@ class FarmApiTestCase(unittest.TestCase):
         self.assertEqual(len(last_page["items"]), 2)
         self.assertEqual(last_page["pagination"]["page"], 4)
         self.assertEqual(dashboard["total_farms"], 32)
+        self.assertEqual(len(mapped), 32)
+        self.assertEqual(mapped[0]["farm_name"], "Ahmednagar Canal Farm")
         self.assertGreater(dashboard["total_area"], 150)
         self.assertGreaterEqual(len(dashboard["stage_distribution"]), 4)
         self.assertEqual(export.data.count(b"\n"), 33)

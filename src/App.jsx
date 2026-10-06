@@ -3,6 +3,7 @@ import AppShell from './components/AppShell'
 import ConfirmDialog from './components/ConfirmDialog'
 import Dashboard from './components/Dashboard'
 import FarmFormModal from './components/FarmFormModal'
+import FarmMap from './components/FarmMap'
 import FarmRecords from './components/FarmRecords'
 import RecordDrawer from './components/RecordDrawer'
 import Toast from './components/Toast'
@@ -29,6 +30,7 @@ export default function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [dashboard, setDashboard] = useState(emptyDashboard)
   const [records, setRecords] = useState([])
+  const [mapRecords, setMapRecords] = useState([])
   const [pagination, setPagination] = useState(emptyPagination)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -53,15 +55,21 @@ export default function App() {
     setPage(data.pagination.page)
   }, [page, query, stage])
 
+  const refreshMap = useCallback(async () => {
+    const data = await farmApi.map()
+    setMapRecords(data)
+  }, [])
+
   useEffect(() => {
     let mounted = true
     setLoading(true)
-    Promise.all([farmApi.dashboard(), farmApi.list({ query, stage, page: 1 })])
-      .then(([dashboardData, recordsData]) => {
+    Promise.all([farmApi.dashboard(), farmApi.list({ query, stage, page: 1 }), farmApi.map()])
+      .then(([dashboardData, recordsData, mapData]) => {
         if (!mounted) return
         setDashboard(dashboardData)
         setRecords(recordsData.items)
         setPagination(recordsData.pagination)
+        setMapRecords(mapData)
       })
       .catch(() => {
         if (mounted) setToast({ type: 'error', title: 'Connection problem', message: 'The farm database could not be reached.' })
@@ -106,7 +114,7 @@ export default function App() {
     setFormRecord(undefined)
     const destinationPage = isEditing ? page : 1
     if (!isEditing) setPage(1)
-    await Promise.all([refreshDashboard(), refreshRecords(destinationPage)])
+    await Promise.all([refreshDashboard(), refreshRecords(destinationPage), refreshMap()])
     setToast({
       title: isEditing ? 'Record updated' : 'Farm record saved',
       message: isEditing
@@ -123,7 +131,7 @@ export default function App() {
       const name = deleteRecord.farm_name
       await farmApi.remove(deleteRecord.id)
       setDeleteRecord(null)
-      await Promise.all([refreshDashboard(), refreshRecords()])
+      await Promise.all([refreshDashboard(), refreshRecords(), refreshMap()])
       setToast({ title: 'Record deleted', message: `${name} was removed from the database.` })
     } catch (error) {
       setToast({ type: 'error', title: 'Delete failed', message: error.message })
@@ -147,9 +155,12 @@ export default function App() {
     setPage(1)
   }
 
-  const heading = activeView === 'dashboard'
-    ? { eyebrow: 'Crop & Farm Data Management', title: 'Farm overview', description: 'A focused view of your registered sugarcane plots.' }
-    : { eyebrow: 'Crop & Farm Data Management', title: 'Farm records', description: 'Retrieve and update saved farm and crop information.' }
+  const headings = {
+    dashboard: { eyebrow: 'Crop & Farm Data Management', title: 'Farm overview', description: 'A focused view of your registered sugarcane plots.' },
+    records: { eyebrow: 'Crop & Farm Data Management', title: 'Farm records', description: 'Retrieve and update saved farm and crop information.' },
+    map: { eyebrow: 'Irrigation Planning Layer', title: 'Field map', description: 'See shaded farm plots and their stage-based irrigation priority.' },
+  }
+  const heading = headings[activeView]
 
   return (
     <AppShell activeView={activeView} onNavigate={navigate} collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)}>
@@ -163,7 +174,7 @@ export default function App() {
             onOpenRecords={() => navigate('records')}
             onViewRecord={setSelectedRecord}
           />
-        ) : (
+        ) : activeView === 'records' ? (
           <FarmRecords
             records={records}
             pagination={pagination}
@@ -178,6 +189,12 @@ export default function App() {
             onView={setSelectedRecord}
             onEdit={openEdit}
             onDelete={setDeleteRecord}
+          />
+        ) : (
+          <FarmMap
+            records={mapRecords}
+            loading={loading}
+            onOpenRecord={setSelectedRecord}
           />
         )}
       </div>

@@ -1,9 +1,10 @@
-import { Database, LayoutDashboard } from 'lucide-react'
+import { Database, LayoutDashboard, Map } from 'lucide-react'
 import BrandMark from './BrandMark'
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'records', label: 'Farm & Crop Records', icon: Database },
+  { id: 'map', label: 'Field Map', icon: Map },
 ]
 
 export default function AppShell({ activeView, onNavigate, collapsed, onToggle, children }) {
@@ -46,7 +47,7 @@ export default function AppShell({ activeView, onNavigate, collapsed, onToggle, 
             onClick={() => onNavigate(id)}
           >
             <Icon size={20} />
-            <span>{id === 'records' ? 'Records' : label}</span>
+            <span>{id === 'records' ? 'Records' : id === 'map' ? 'Map' : label}</span>
           </button>
         ))}
       </nav>

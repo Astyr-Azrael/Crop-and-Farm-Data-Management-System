@@ -1,8 +1,8 @@
 # Crop and Farm Data Management System
 
-A focused implementation of **SRS FR-02: Crop and Field Data Management** for the AI-based Irrigation Advisory System for Sugarcane Crop.
+A focused implementation of **Crop and Field Data Management** for the AI-based Irrigation Advisory System for Sugarcane Crop.
 
-The application deliberately contains no login, irrigation advisory, weather, notification, or administration modules. It demonstrates only the required farm and crop data workflow: enter, validate, save, retrieve, update, display, and export.
+The application deliberately contains no login, weather, notification, or administration modules. It demonstrates the required farm and crop data workflow—enter, validate, save, retrieve, update, display, and export—plus a visual field-planning layer for the irrigation demo.
 
 ## Features
 
@@ -17,6 +17,8 @@ The application deliberately contains no login, irrigation advisory, weather, no
 - One-click demo form fill for **Sugarcane Farm - Plot A**
 - Local location autocomplete for common Maharashtra farming regions
 - Thirty-two sample farm and crop records available immediately for dashboard and CSV demonstrations
+- Interactive field map with 32 selectable, shaded parcels and growth-stage filters
+- Stage-based irrigation priority legend, mapped-area summary, and selected-farm details
 
 ## Technology
 

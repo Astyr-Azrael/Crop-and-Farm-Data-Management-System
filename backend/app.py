@@ -83,6 +83,14 @@ def create_app(database_path=None, seed_samples=True):
             return jsonify({"message": "Farm record not found."}), 404
         return jsonify(row_to_dict(record))
 
+    @app.get("/api/farms-map")
+    def farm_map():
+        with connect(app.config["DATABASE"]) as connection:
+            records = connection.execute(
+                "SELECT * FROM farms ORDER BY farm_name ASC, id ASC"
+            ).fetchall()
+        return jsonify([row_to_dict(row) for row in records])
+
     @app.post("/api/farms")
     def create_farm():
         payload = request.get_json(silent=True) or {}

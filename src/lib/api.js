@@ -28,6 +28,7 @@ export const farmApi = {
     return request(`/api/farms${suffix}`)
   },
   get: (id) => request(`/api/farms/${id}`),
+  map: () => request('/api/farms-map'),
   dashboard: () => request('/api/dashboard'),
   create: (payload) => request('/api/farms', { method: 'POST', body: JSON.stringify(payload) }),
   update: (id, payload) => request(`/api/farms/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
