@@ -10,56 +10,96 @@ import {
   Ruler,
   Sprout,
 } from 'lucide-react'
+import {
+  LayersControl,
+  MapContainer,
+  Polygon,
+  ScaleControl,
+  TileLayer,
+  Tooltip,
+  useMap,
+} from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
 import { growthStages, shortStage } from '../constants'
 
 const stagePlanning = {
   'Germination (0-45 days)': {
-    priority: 'High priority',
-    className: 'high',
-    color: '#dd5f52',
+    priority: 'High priority', className: 'high', color: '#e1554a',
     focus: 'Keep the planting zone uniformly moist and inspect this plot before the next cycle.',
   },
   'Tillering (46-100 days)': {
-    priority: 'Due soon',
-    className: 'soon',
-    color: '#e4a02e',
+    priority: 'Due soon', className: 'soon', color: '#e29b25',
     focus: 'Review root-zone moisture and prepare the next irrigation cycle for active tillering.',
   },
   'Grand Growth (101-270 days)': {
-    priority: 'Active cycle',
-    className: 'active',
-    color: '#2f9f6b',
+    priority: 'Active cycle', className: 'active', color: '#1f9b63',
     focus: 'Maintain consistent moisture and inspect high-demand portions of the field.',
   },
   'Maturity (271-365 days)': {
-    priority: 'Monitor',
-    className: 'monitor',
-    color: '#718096',
+    priority: 'Monitor', className: 'monitor', color: '#64748b',
     focus: 'Avoid excess water and irrigate only after checking field and soil conditions.',
   },
 }
 
-const shapeOffsets = [
-  [[3, 10], [16, 2], [88, 6], [96, 69], [80, 86], [5, 79]],
-  [[2, 4], [76, 1], [95, 16], [88, 83], [14, 87], [1, 66]],
-  [[8, 1], [91, 8], [96, 78], [71, 89], [3, 76], [1, 20]],
-  [[2, 18], [22, 2], [94, 5], [88, 72], [69, 88], [5, 80]],
+const locationCoordinates = [
+  ['shrirampur', [19.6197, 74.6570]], ['kopargaon', [19.8824, 74.4764]],
+  ['rahuri', [19.3907, 74.6488]], ['chalisgaon', [20.4640, 75.0060]],
+  ['malegaon', [20.5579, 74.5089]], ['niphad', [20.0776, 74.1098]],
+  ['paithan', [19.4828, 75.3850]], ['georai', [19.2637, 75.7500]],
+  ['tuljapur', [18.0080, 76.0700]], ['ausa', [18.2473, 76.4996]],
+  ['loha', [18.9629, 77.1306]], ['pandharpur', [17.6746, 75.3237]],
+  ['malshiras', [17.8630, 74.9100]], ['akluj', [17.8830, 75.0200]],
+  ['indapur', [18.1171, 75.0236]], ['baramati', [18.1517, 74.5777]],
+  ['daund', [18.4638, 74.5789]], ['junnar', [19.2082, 73.8752]],
+  ['saswad', [18.3435, 74.0310]], ['purandar', [18.2820, 74.1430]],
+  ['phaltan', [17.9911, 74.4313]], ['koregaon', [17.6989, 74.1596]],
+  ['patan', [17.3751, 73.9017]], ['wai', [17.9520, 73.8900]],
+  ['karad', [17.2850, 74.1840]], ['miraj', [16.8220, 74.6428]],
+  ['tasgaon', [17.0370, 74.6017]], ['palus', [17.0976, 74.4481]],
+  ['radhanagari', [16.4130, 73.9950]], ['hatkanangale', [16.7444, 74.4477]],
+  ['shirol', [16.7330, 74.6000]],
 ]
 
-const toPolygonPoints = (index) => {
-  const column = index % 8
-  const row = Math.floor(index / 8)
-  const x = 25 + column * 106
-  const y = 34 + row * 111
-  return shapeOffsets[index % shapeOffsets.length]
-    .map(([dx, dy]) => `${x + dx},${y + dy}`)
-    .join(' ')
+const hashText = (value) => [...value].reduce((total, character) => total + character.charCodeAt(0), 0)
+
+const locateFarm = (record) => {
+  const location = record.location.toLowerCase()
+  const base = locationCoordinates.find(([name]) => location.includes(name))?.[1] || [18.5204, 73.8567]
+  const hash = hashText(`${record.farm_name}-${record.id}`)
+  const angle = ((hash % 360) * Math.PI) / 180
+  const distance = 0.032 + (hash % 5) * 0.003
+  return [
+    base[0] + Math.cos(angle) * distance,
+    base[1] + (Math.sin(angle) * distance) / Math.cos((base[0] * Math.PI) / 180),
+  ]
 }
 
-const polygonCenter = (index) => ({
-  x: 74 + (index % 8) * 106,
-  y: 78 + Math.floor(index / 8) * 111,
-})
+const createPlotBoundary = (record, [latitude, longitude]) => {
+  const sideInMetres = Math.sqrt(Number(record.area) * 4046.8564224)
+  const halfSide = Math.max(sideInMetres / 2, 36)
+  const latitudeRadius = halfSide / 111320
+  const longitudeRadius = halfSide / (111320 * Math.cos((latitude * Math.PI) / 180))
+
+  return [
+    [latitude + latitudeRadius * 0.92, longitude - longitudeRadius * 0.78],
+    [latitude + latitudeRadius * 0.70, longitude + longitudeRadius * 0.88],
+    [latitude + latitudeRadius * 0.12, longitude + longitudeRadius],
+    [latitude - latitudeRadius * 0.83, longitude + longitudeRadius * 0.72],
+    [latitude - latitudeRadius, longitude - longitudeRadius * 0.58],
+    [latitude - latitudeRadius * 0.20, longitude - longitudeRadius],
+  ]
+}
+
+function MapController({ center }) {
+  const map = useMap()
+
+  useEffect(() => {
+    map.invalidateSize()
+    map.flyTo(center, 16, { duration: 0.65 })
+  }, [center, map])
+
+  return null
+}
 
 function MapMetric({ icon: Icon, label, value, note }) {
   return (
@@ -74,9 +114,16 @@ export default function FarmMap({ records, loading, onOpenRecord }) {
   const [selectedId, setSelectedId] = useState(null)
   const [stage, setStage] = useState('')
 
+  const mappedRecords = useMemo(
+    () => records.map((record) => {
+      const center = locateFarm(record)
+      return { ...record, center, boundary: createPlotBoundary(record, center) }
+    }),
+    [records],
+  )
   const visibleRecords = useMemo(
-    () => records.filter((record) => !stage || record.growth_stage === stage),
-    [records, stage],
+    () => mappedRecords.filter((record) => !stage || record.growth_stage === stage),
+    [mappedRecords, stage],
   )
 
   useEffect(() => {
@@ -84,36 +131,43 @@ export default function FarmMap({ records, loading, onOpenRecord }) {
       setSelectedId(null)
       return
     }
-    if (!visibleRecords.some((record) => record.id === selectedId)) {
-      setSelectedId(visibleRecords[0].id)
-    }
+    if (!visibleRecords.some((record) => record.id === selectedId)) setSelectedId(visibleRecords[0].id)
   }, [selectedId, visibleRecords])
 
-  const selected = records.find((record) => record.id === selectedId) || visibleRecords[0]
+  const selected = mappedRecords.find((record) => record.id === selectedId) || visibleRecords[0]
   const selectedPlanning = selected ? stagePlanning[selected.growth_stage] : null
   const totalArea = visibleRecords.reduce((sum, record) => sum + Number(record.area || 0), 0)
   const attentionCount = visibleRecords.filter((record) => ['Germination (0-45 days)', 'Tillering (46-100 days)'].includes(record.growth_stage)).length
+  const plotNumber = selected ? records.findIndex((record) => record.id === selected.id) + 1 : 0
 
   return (
     <div className="page-stack page-enter field-map-page">
       <section className="map-intro">
         <div>
-          <span className="eyebrow">Visual irrigation planning</span>
-          <h2>Farm coverage map</h2>
-          <p>Select a shaded plot to connect its crop record with a clear, stage-based irrigation priority.</p>
+          <span className="eyebrow">Geographic irrigation planning</span>
+          <h2>Farm plot map</h2>
+          <p>View a selected sugarcane plot on a real map, with its approximate field boundary shaded by irrigation priority.</p>
         </div>
-        <label className="map-filter">
-          <span>Show growth stage</span>
-          <select value={stage} onChange={(event) => setStage(event.target.value)}>
-            <option value="">All growth stages</option>
-            {growthStages.map((item) => <option key={item}>{item}</option>)}
-          </select>
-        </label>
+        <div className="map-intro__controls">
+          <label className="map-filter map-filter--farm">
+            <span>Mapped farm</span>
+            <select value={selectedId || ''} onChange={(event) => setSelectedId(Number(event.target.value))} disabled={!visibleRecords.length}>
+              {visibleRecords.map((record) => <option key={record.id} value={record.id}>{record.farm_name}</option>)}
+            </select>
+          </label>
+          <label className="map-filter">
+            <span>Growth stage</span>
+            <select value={stage} onChange={(event) => setStage(event.target.value)}>
+              <option value="">All growth stages</option>
+              {growthStages.map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </label>
+        </div>
       </section>
 
       <section className="map-metrics" aria-label="Mapped farm summary">
-        <MapMetric icon={LandPlot} label="Mapped plots" value={loading ? '—' : visibleRecords.length} note="Selectable field boundaries" />
-        <MapMetric icon={Ruler} label="Mapped area" value={loading ? '—' : `${totalArea.toFixed(1)} acres`} note="Filtered farm coverage" />
+        <MapMetric icon={LandPlot} label="Available plots" value={loading ? '—' : visibleRecords.length} note="Mapped SQLite records" />
+        <MapMetric icon={Ruler} label="Covered area" value={loading ? '—' : `${totalArea.toFixed(1)} acres`} note="Current filtered selection" />
         <MapMetric icon={Droplets} label="Needs attention" value={loading ? '—' : attentionCount} note="High priority or due soon" />
         <MapMetric icon={Sprout} label="Selected plot" value={selected ? shortStage(selected.growth_stage) : 'None'} note={selected?.farm_name || 'Choose a field'} />
       </section>
@@ -122,97 +176,55 @@ export default function FarmMap({ records, loading, onOpenRecord }) {
         <article className="field-map-panel">
           <div className="field-map-panel__header">
             <div>
-              <span className="eyebrow">Field boundary view</span>
-              <h3>Stage-based irrigation priority</h3>
+              <span className="eyebrow">Satellite & street map</span>
+              <h3>Shaded field boundary</h3>
             </div>
-            <span className="map-live-badge"><span /> SQLite records</span>
+            <span className="map-live-badge"><span /> Interactive map</span>
           </div>
 
           <div className="field-map-canvas">
             {loading ? (
               <div className="map-loading"><span className="spinner" /> Loading mapped farms…</div>
+            ) : selected && selectedPlanning ? (
+              <>
+                <MapContainer center={selected.center} zoom={16} minZoom={6} maxZoom={19} scrollWheelZoom zoomControl className="leaflet-farm-map">
+                  <LayersControl position="topright">
+                    <LayersControl.BaseLayer checked name="Satellite imagery">
+                      <TileLayer attribution="Tiles &copy; Esri" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={19} />
+                    </LayersControl.BaseLayer>
+                    <LayersControl.BaseLayer name="Street map">
+                      <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />
+                    </LayersControl.BaseLayer>
+                  </LayersControl>
+                  <Polygon
+                    positions={selected.boundary}
+                    pathOptions={{ color: '#ffffff', weight: 4, opacity: 1, fillColor: selectedPlanning.color, fillOpacity: 0.58 }}
+                  >
+                    <Tooltip permanent direction="center" className="plot-map-label">
+                      Plot {String(plotNumber).padStart(2, '0')} · {selected.area} acres
+                    </Tooltip>
+                  </Polygon>
+                  <ScaleControl position="bottomleft" imperial={false} />
+                  <MapController center={selected.center} />
+                </MapContainer>
+
+                <div className="map-legend" aria-label="Irrigation priority legend">
+                  {Object.values(stagePlanning).map((item) => (
+                    <span key={item.priority}><i style={{ background: item.color }} /> {item.priority}</span>
+                  ))}
+                </div>
+                <span className={`map-boundary-badge map-boundary-badge--${selectedPlanning.className}`}>
+                  <MapPinned size={14} /> {selectedPlanning.priority} boundary
+                </span>
+              </>
             ) : (
-              <svg viewBox="0 0 900 520" role="img" aria-labelledby="field-map-title field-map-description">
-                <title id="field-map-title">Interactive farm boundary map</title>
-                <desc id="field-map-description">Thirty-two schematic field parcels shaded by crop-stage irrigation priority.</desc>
-                <defs>
-                  <linearGradient id="map-ground" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#eff3e5" />
-                    <stop offset="100%" stopColor="#dfe9d7" />
-                  </linearGradient>
-                  <pattern id="map-grid" width="28" height="28" patternUnits="userSpaceOnUse">
-                    <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#91a58f" strokeOpacity=".12" strokeWidth="1" />
-                  </pattern>
-                  <filter id="plot-shadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#17382c" floodOpacity=".16" />
-                  </filter>
-                </defs>
-
-                <rect width="900" height="520" rx="22" fill="url(#map-ground)" />
-                <rect width="900" height="520" rx="22" fill="url(#map-grid)" />
-                <path className="map-contour" d="M-30 106 C140 34 239 153 382 89 S648 40 939 112" />
-                <path className="map-contour" d="M-40 392 C138 314 241 433 409 367 S696 328 943 401" />
-                <path className="map-road map-road--edge" d="M-20 263 C180 213 301 303 453 251 S719 195 930 246" />
-                <path className="map-road" d="M-20 263 C180 213 301 303 453 251 S719 195 930 246" />
-                <path className="map-canal map-canal--edge" d="M153 -18 C224 105 149 178 214 289 S328 425 290 548" />
-                <path className="map-canal" d="M153 -18 C224 105 149 178 214 289 S328 425 290 548" />
-                <text className="map-label" x="386" y="239">FIELD ACCESS ROAD</text>
-                <text className="map-label map-label--water" x="178" y="170" transform="rotate(67 178 170)">NORTH CANAL</text>
-
-                {records.map((record, index) => {
-                  const planning = stagePlanning[record.growth_stage]
-                  const isVisible = !stage || record.growth_stage === stage
-                  const isSelected = record.id === selected?.id
-                  const center = polygonCenter(index)
-                  return (
-                    <g
-                      className={`field-parcel ${isSelected ? 'field-parcel--selected' : ''} ${isVisible ? '' : 'field-parcel--dimmed'}`}
-                      key={record.id}
-                      role="button"
-                      tabIndex={isVisible ? 0 : -1}
-                      aria-label={`${record.farm_name}, ${planning.priority}`}
-                      onClick={() => isVisible && setSelectedId(record.id)}
-                      onKeyDown={(event) => {
-                        if (isVisible && (event.key === 'Enter' || event.key === ' ')) {
-                          event.preventDefault()
-                          setSelectedId(record.id)
-                        }
-                      }}
-                    >
-                      <polygon
-                        points={toPolygonPoints(index)}
-                        fill={planning.color}
-                        filter={isSelected ? 'url(#plot-shadow)' : undefined}
-                      />
-                      <text x={center.x} y={center.y} textAnchor="middle">P{String(index + 1).padStart(2, '0')}</text>
-                      <title>{record.farm_name} · {planning.priority}</title>
-                    </g>
-                  )
-                })}
-
-                <g className="map-north" transform="translate(836 35)">
-                  <circle cx="0" cy="0" r="23" />
-                  <path d="M0 -14 L7 8 L0 4 L-7 8 Z" />
-                  <text x="0" y="-29" textAnchor="middle">N</text>
-                </g>
-                <g className="map-scale" transform="translate(720 487)">
-                  <path d="M0 0 H112" />
-                  <path d="M0 -5 V5 M56 -5 V5 M112 -5 V5" />
-                  <text x="56" y="-10" textAnchor="middle">250 m field scale</text>
-                </g>
-              </svg>
+              <div className="map-loading"><Layers3 size={22} /> No mapped farms in this filter</div>
             )}
-
-            <div className="map-legend" aria-label="Irrigation priority legend">
-              {Object.values(stagePlanning).map((item) => (
-                <span key={item.priority}><i style={{ background: item.color }} /> {item.priority}</span>
-              ))}
-            </div>
           </div>
 
           <div className="map-note">
             <CircleHelp size={16} />
-            <span><strong>How to read this map:</strong> colour shows stage-based irrigation priority. The parcel geometry is a presentation layer; confirm surveyed boundaries, soil moisture, and weather before field action.</span>
+            <span><strong>Demo map:</strong> the basemap is real. The shaded footprint uses the stored acreage and an approximate location near the recorded town; replace it with surveyed GPS/GeoJSON coordinates for field deployment.</span>
           </div>
         </article>
 
@@ -220,10 +232,8 @@ export default function FarmMap({ records, loading, onOpenRecord }) {
           {selected && selectedPlanning ? (
             <>
               <div className="map-details__top">
-                <span className={`priority-badge priority-badge--${selectedPlanning.className}`}>
-                  <Droplets size={14} /> {selectedPlanning.priority}
-                </span>
-                <span className="map-plot-id">Plot {String(records.findIndex((record) => record.id === selected.id) + 1).padStart(2, '0')}</span>
+                <span className={`priority-badge priority-badge--${selectedPlanning.className}`}><Droplets size={14} /> {selectedPlanning.priority}</span>
+                <span className="map-plot-id">Plot {String(plotNumber).padStart(2, '0')}</span>
               </div>
               <div className="map-details__title">
                 <span><Navigation size={17} /></span>

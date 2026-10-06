@@ -17,7 +17,7 @@ The application deliberately contains no login, weather, notification, or admini
 - One-click demo form fill for **Sugarcane Farm - Plot A**
 - Local location autocomplete for common Maharashtra farming regions
 - Thirty-two sample farm and crop records available immediately for dashboard and CSV demonstrations
-- Interactive field map with 32 selectable, shaded parcels and growth-stage filters
+- Interactive satellite/OpenStreetMap view with a proportional shaded plot boundary for every farm record
 - Stage-based irrigation priority legend, mapped-area summary, and selected-farm details
 
 ## Technology
