@@ -18,7 +18,9 @@ VALID_RECORD = {
 
 class FarmApiTestCase(unittest.TestCase):
     def setUp(self):
-        self.temp_dir = tempfile.TemporaryDirectory()
+        test_root = Path(__file__).resolve().parents[1] / "work" / "test-databases"
+        test_root.mkdir(parents=True, exist_ok=True)
+        self.temp_dir = tempfile.TemporaryDirectory(dir=test_root)
         self.database = Path(self.temp_dir.name) / "test.db"
         self.app = create_app(self.database, seed_samples=False)
         self.app.config.update(TESTING=True)
@@ -48,15 +50,21 @@ class FarmApiTestCase(unittest.TestCase):
         seeded_app.config.update(TESTING=True)
         client = seeded_app.test_client()
 
-        records = client.get("/api/farms").get_json()
+        first_page = client.get("/api/farms").get_json()
+        last_page = client.get("/api/farms?page=4").get_json()
         dashboard = client.get("/api/dashboard").get_json()
         export = client.get("/api/farms/export.csv")
 
-        self.assertEqual(len(records), 12)
-        self.assertEqual(dashboard["total_farms"], 12)
-        self.assertGreater(dashboard["total_area"], 50)
+        self.assertEqual(len(first_page["items"]), 10)
+        self.assertEqual(first_page["pagination"]["limit"], 10)
+        self.assertEqual(first_page["pagination"]["total"], 32)
+        self.assertEqual(first_page["pagination"]["total_pages"], 4)
+        self.assertEqual(len(last_page["items"]), 2)
+        self.assertEqual(last_page["pagination"]["page"], 4)
+        self.assertEqual(dashboard["total_farms"], 32)
+        self.assertGreater(dashboard["total_area"], 150)
         self.assertGreaterEqual(len(dashboard["stage_distribution"]), 4)
-        self.assertEqual(export.data.count(b"\n"), 13)
+        self.assertEqual(export.data.count(b"\n"), 33)
 
     def test_create_retrieve_update_export_and_delete_record(self):
         created = self.client.post("/api/farms", json=VALID_RECORD)
@@ -83,7 +91,9 @@ class FarmApiTestCase(unittest.TestCase):
 
         deleted = self.client.delete(f"/api/farms/{record['id']}")
         self.assertEqual(deleted.status_code, 204)
-        self.assertEqual(self.client.get("/api/farms").get_json(), [])
+        records = self.client.get("/api/farms").get_json()
+        self.assertEqual(records["items"], [])
+        self.assertEqual(records["pagination"]["total"], 0)
 
 
 if __name__ == "__main__":

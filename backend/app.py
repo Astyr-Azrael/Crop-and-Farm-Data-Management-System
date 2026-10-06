@@ -32,21 +32,46 @@ def create_app(database_path=None, seed_samples=True):
     def list_farms():
         query = request.args.get("q", "").strip()
         stage = request.args.get("stage", "").strip()
-        sql = "SELECT * FROM farms WHERE 1 = 1"
+        try:
+            requested_page = max(int(request.args.get("page", 1)), 1)
+        except (TypeError, ValueError):
+            requested_page = 1
+
+        page_size = 10
+        where_sql = " WHERE 1 = 1"
         params = []
 
         if query:
-            sql += " AND (farm_name LIKE ? OR location LIKE ? OR sugarcane_variety LIKE ?)"
+            where_sql += " AND (farm_name LIKE ? OR location LIKE ? OR sugarcane_variety LIKE ?)"
             wildcard = f"%{query}%"
             params.extend([wildcard, wildcard, wildcard])
         if stage:
-            sql += " AND growth_stage = ?"
+            where_sql += " AND growth_stage = ?"
             params.append(stage)
-        sql += " ORDER BY updated_at DESC, id DESC"
 
         with connect(app.config["DATABASE"]) as connection:
-            records = [row_to_dict(row) for row in connection.execute(sql, params)]
-        return jsonify(records)
+            total = connection.execute(
+                f"SELECT COUNT(*) AS count FROM farms{where_sql}", params
+            ).fetchone()["count"]
+            total_pages = max((total + page_size - 1) // page_size, 1)
+            page = min(requested_page, total_pages)
+            offset = (page - 1) * page_size
+            rows = connection.execute(
+                f"SELECT * FROM farms{where_sql} ORDER BY updated_at DESC, id DESC LIMIT ? OFFSET ?",
+                (*params, page_size, offset),
+            ).fetchall()
+
+        return jsonify(
+            {
+                "items": [row_to_dict(row) for row in rows],
+                "pagination": {
+                    "page": page,
+                    "limit": page_size,
+                    "total": total,
+                    "total_pages": total_pages,
+                },
+            }
+        )
 
     @app.get("/api/farms/<int:farm_id>")
     def get_farm(farm_id):

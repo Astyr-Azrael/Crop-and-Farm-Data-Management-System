@@ -317,6 +317,12 @@ td > small { color: #8d9a94; }
 .farm-cell small { max-width: 270px; overflow: hidden; display: flex; align-items: center; gap: 4px; color: #8a9891; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .row-actions { display: flex; gap: 5px; }
 .row-actions .icon-button { width: 32px; height: 32px; border-color: transparent; background: transparent; }
+.pagination-bar { min-height: 68px; padding: 12px 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #7f8e87; border-top: 1px solid #edf1ee; background: white; font-size: 9.5px; }
+.pagination { display: flex; align-items: center; gap: 5px; }
+.pagination button { width: 34px; height: 34px; padding: 0; display: grid; place-items: center; color: #64766d; border: 1px solid #dfe7e2; border-radius: 9px; background: white; cursor: pointer; font-size: 10px; font-weight: 800; transition: .18s ease; }
+.pagination button:hover:not(:disabled) { color: var(--forest-700); border-color: #9bc8ac; background: #f1faf5; transform: translateY(-1px); }
+.pagination button:disabled { cursor: not-allowed; opacity: .35; }
+.pagination .pagination__page--active { color: white; border-color: var(--forest-700); background: var(--forest-700); box-shadow: 0 6px 14px rgba(15, 91, 61, .16); }
 .records-footer { min-height: 54px; padding: 0 22px; display: flex; align-items: center; justify-content: space-between; gap: 15px; color: #97a39d; background: #fbfcfb; font-size: 9px; }
 .records-footer span { display: flex; align-items: center; gap: 6px; }
 .table-skeleton { min-height: 330px; padding: 25px; display: grid; align-content: start; gap: 12px; }
@@ -481,6 +487,8 @@ td > small { color: #8d9a94; }
   .record-count { margin-left: 0; }
   th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4) { display: none; }
   .records-footer { align-items: flex-start; flex-direction: column; justify-content: center; }
+  .pagination-bar { align-items: flex-start; flex-direction: column; }
+  .pagination { width: 100%; justify-content: center; }
   .modal-backdrop { padding: 8px; align-items: flex-end; }
   .modal { max-height: calc(100vh - 16px); border-radius: 18px 18px 12px 12px; }
   .modal__header, .form-section { padding-inline: 19px; }

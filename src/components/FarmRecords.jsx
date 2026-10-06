@@ -1,8 +1,12 @@
-import { Download, Eye, MapPin, MoreHorizontal, PencilLine, Plus, Search, Sprout, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Eye, MapPin, MoreHorizontal, PencilLine, Plus, Search, Sprout, Trash2 } from 'lucide-react'
 import { formatDate, growthStages, shortStage } from '../constants'
 import EmptyState from './EmptyState'
 
-export default function FarmRecords({ records, loading, query, stage, onQuery, onStage, onAdd, onView, onEdit, onDelete }) {
+export default function FarmRecords({ records, pagination, page, loading, query, stage, onQuery, onStage, onPage, onAdd, onView, onEdit, onDelete }) {
+  const firstRecord = pagination.total ? (page - 1) * pagination.limit + 1 : 0
+  const lastRecord = Math.min(page * pagination.limit, pagination.total)
+  const pages = Array.from({ length: pagination.total_pages }, (_, index) => index + 1)
+
   return (
     <div className="page-stack page-enter">
       <section className="records-toolbar">
@@ -27,7 +31,7 @@ export default function FarmRecords({ records, loading, query, stage, onQuery, o
             <option value="">All growth stages</option>
             {growthStages.map((item) => <option key={item}>{item}</option>)}
           </select>
-          <span className="record-count">{records.length} {records.length === 1 ? 'record' : 'records'}</span>
+          <span className="record-count">{pagination.total} {pagination.total === 1 ? 'record' : 'records'}</span>
         </div>
 
         {loading ? (
@@ -80,6 +84,31 @@ export default function FarmRecords({ records, loading, query, stage, onQuery, o
           </div>
         ) : (
           <EmptyState onAdd={onAdd} />
+        )}
+
+        {!loading && pagination.total > 0 && (
+          <div className="pagination-bar">
+            <span>Showing {firstRecord}-{lastRecord} of {pagination.total} records</span>
+            <nav className="pagination" aria-label="Farm records pagination">
+              <button onClick={() => onPage(page - 1)} disabled={page === 1} aria-label="Previous page">
+                <ChevronLeft size={16} />
+              </button>
+              {pages.map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  className={pageNumber === page ? 'pagination__page--active' : ''}
+                  onClick={() => onPage(pageNumber)}
+                  aria-current={pageNumber === page ? 'page' : undefined}
+                  aria-label={`Page ${pageNumber}`}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+              <button onClick={() => onPage(page + 1)} disabled={page === pagination.total_pages} aria-label="Next page">
+                <ChevronRight size={16} />
+              </button>
+            </nav>
+          </div>
         )}
 
         <div className="records-footer">

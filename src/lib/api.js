@@ -19,10 +19,11 @@ async function request(path, options = {}) {
 }
 
 export const farmApi = {
-  list: ({ query = '', stage = '' } = {}) => {
+  list: ({ query = '', stage = '', page = 1 } = {}) => {
     const params = new URLSearchParams()
     if (query) params.set('q', query)
     if (stage) params.set('stage', stage)
+    params.set('page', page)
     const suffix = params.toString() ? `?${params}` : ''
     return request(`/api/farms${suffix}`)
   },

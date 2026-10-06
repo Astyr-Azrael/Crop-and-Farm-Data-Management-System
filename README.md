@@ -10,12 +10,13 @@ The application deliberately contains no login, irrigation advisory, weather, no
 - Mandatory validation for farm name, location, positive area, variety, soil type, plantation date, and growth stage
 - SQLite persistence through a Python API
 - Search and growth-stage filtering
+- Server-backed pagination with exactly 10 farm records per page
 - Record detail view, update, and confirmed deletion
 - CSV export of saved records
 - Responsive React interface with subtle page and interaction animations
 - One-click demo form fill for **Sugarcane Farm - Plot A**
 - Local location autocomplete for common Maharashtra farming regions
-- Twelve sample farm and crop records available immediately for dashboard and CSV demonstrations
+- Thirty-two sample farm and crop records available immediately for dashboard and CSV demonstrations
 
 ## Technology
 

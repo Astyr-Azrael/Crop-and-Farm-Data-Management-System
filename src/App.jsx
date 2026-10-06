@@ -17,11 +17,20 @@ const emptyDashboard = {
   recent_records: [],
 }
 
+const emptyPagination = {
+  page: 1,
+  limit: 10,
+  total: 0,
+  total_pages: 1,
+}
+
 export default function App() {
   const [activeView, setActiveView] = useState('dashboard')
   const [collapsed, setCollapsed] = useState(false)
   const [dashboard, setDashboard] = useState(emptyDashboard)
   const [records, setRecords] = useState([])
+  const [pagination, setPagination] = useState(emptyPagination)
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [stage, setStage] = useState('')
@@ -37,19 +46,22 @@ export default function App() {
     setDashboard(data)
   }, [])
 
-  const refreshRecords = useCallback(async () => {
-    const data = await farmApi.list({ query, stage })
-    setRecords(data)
-  }, [query, stage])
+  const refreshRecords = useCallback(async (requestedPage = page) => {
+    const data = await farmApi.list({ query, stage, page: requestedPage })
+    setRecords(data.items)
+    setPagination(data.pagination)
+    setPage(data.pagination.page)
+  }, [page, query, stage])
 
   useEffect(() => {
     let mounted = true
     setLoading(true)
-    Promise.all([farmApi.dashboard(), farmApi.list({ query, stage })])
+    Promise.all([farmApi.dashboard(), farmApi.list({ query, stage, page: 1 })])
       .then(([dashboardData, recordsData]) => {
         if (!mounted) return
         setDashboard(dashboardData)
-        setRecords(recordsData)
+        setRecords(recordsData.items)
+        setPagination(recordsData.pagination)
       })
       .catch(() => {
         if (mounted) setToast({ type: 'error', title: 'Connection problem', message: 'The farm database could not be reached.' })
@@ -65,7 +77,7 @@ export default function App() {
       refreshRecords().catch(() => setToast({ type: 'error', title: 'Unable to load records', message: 'Please try again.' })).finally(() => setLoading(false))
     }, 180)
     return () => window.clearTimeout(timer)
-  }, [activeView, query, stage, refreshRecords])
+  }, [activeView, refreshRecords])
 
   useEffect(() => {
     if (!toast) return
@@ -92,7 +104,9 @@ export default function App() {
       : await farmApi.create(payload)
     setFormOpen(false)
     setFormRecord(undefined)
-    await Promise.all([refreshDashboard(), refreshRecords()])
+    const destinationPage = isEditing ? page : 1
+    if (!isEditing) setPage(1)
+    await Promise.all([refreshDashboard(), refreshRecords(destinationPage)])
     setToast({
       title: isEditing ? 'Record updated' : 'Farm record saved',
       message: isEditing
@@ -123,6 +137,16 @@ export default function App() {
     setSelectedRecord(null)
   }
 
+  const updateQuery = (value) => {
+    setQuery(value)
+    setPage(1)
+  }
+
+  const updateStage = (value) => {
+    setStage(value)
+    setPage(1)
+  }
+
   const heading = activeView === 'dashboard'
     ? { eyebrow: 'Crop & Farm Data Management', title: 'Farm overview', description: 'A focused view of your registered sugarcane plots.' }
     : { eyebrow: 'Crop & Farm Data Management', title: 'Farm records', description: 'Retrieve and update saved farm and crop information.' }
@@ -142,11 +166,14 @@ export default function App() {
         ) : (
           <FarmRecords
             records={records}
+            pagination={pagination}
+            page={page}
             loading={loading}
             query={query}
             stage={stage}
-            onQuery={setQuery}
-            onStage={setStage}
+            onQuery={updateQuery}
+            onStage={updateStage}
+            onPage={setPage}
             onAdd={openCreate}
             onView={setSelectedRecord}
             onEdit={openEdit}
