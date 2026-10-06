@@ -1,4 +1,4 @@
-import { Database, LayoutDashboard, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Database, LayoutDashboard } from 'lucide-react'
 import BrandMark from './BrandMark'
 
 const navItems = [
@@ -11,10 +11,12 @@ export default function AppShell({ activeView, onNavigate, collapsed, onToggle, 
     <div className={`app-shell ${collapsed ? 'app-shell--collapsed' : ''}`}>
       <aside className="sidebar">
         <div className="sidebar__top">
-          <BrandMark compact={collapsed} />
-          <button className="icon-button sidebar__toggle" onClick={onToggle} aria-label="Toggle sidebar">
-            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-          </button>
+          <BrandMark
+            compact={collapsed}
+            onClick={onToggle}
+            expanded={!collapsed}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          />
         </div>
 
         <div className="sidebar__label">Workspace</div>

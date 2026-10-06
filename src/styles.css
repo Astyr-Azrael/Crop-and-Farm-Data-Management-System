@@ -61,9 +61,22 @@ button { color: inherit; }
   transition: width .3s ease, padding .3s ease;
 }
 
-.sidebar__top { min-height: 52px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.sidebar__top { min-height: 52px; display: flex; align-items: flex-start; }
 
 .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.brand--button {
+  max-width: 100%;
+  padding: 4px;
+  margin: -4px;
+  border: 0;
+  border-radius: 15px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.brand--button:focus-visible { outline: 3px solid rgba(84, 217, 155, .35); outline-offset: 3px; }
+.brand--button .brand__mark { transition: transform .22s ease, box-shadow .22s ease; }
+.brand--button:hover .brand__mark { transform: translateY(-1px) scale(1.03); box-shadow: 0 11px 24px rgba(15, 91, 61, .27); }
 .brand__mark {
   width: 40px;
   height: 40px;
@@ -128,7 +141,7 @@ button { color: inherit; }
 
 .app-shell--collapsed { padding-left: 86px; }
 .app-shell--collapsed .sidebar { width: 86px; padding-inline: 16px; }
-.app-shell--collapsed .sidebar__top { display: grid; justify-items: center; gap: 10px; }
+.app-shell--collapsed .sidebar__top { justify-content: center; }
 .app-shell--collapsed .sidebar__label,
 .app-shell--collapsed .nav-item span,
 .app-shell--collapsed .brand__copy { display: none; }
